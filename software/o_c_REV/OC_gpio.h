@@ -17,15 +17,15 @@
   #define but_top 4
   #define but_bot 5
 #else
-  #define CV1 19
-  #define CV2 18
-  #define CV3 20
-  #define CV4 17
-  
-  #define TR1 0
-  #define TR2 1
-  #define TR3 2
-  #define TR4 3
+  #define CV1 19 // AD_B1_00, A1:5, A2:5
+  #define CV2 18 // AD_B1_01, A1:6, A2:6
+  #define CV3 20 // AD_B1_10, A1:15, A2:15
+  #define CV4 17 // AD_B1_06, A1:11, A2:11
+
+  #define TR1 0 // AD_B0_03, PWM1_X1
+  #define TR2 1 // AD_B0_02, PWM1_X0 
+  #define TR3 2 // EMC_04, PWM4_A2
+  #define TR4 3 // EMC_05, PWM4_B2
   
   #define but_top 5
   #define but_bot 4
