@@ -677,7 +677,7 @@ public:
 
 H1200State h1200_state;
 
-void FASTRUN H1200_clock(uint32_t triggers) {
+void H1200_clock(uint32_t triggers) {
 
   triggers = h1200_state.trigger_delays_.Process(triggers, OC::trigger_delay_ticks[h1200_settings.get_trigger_delay()]);
   

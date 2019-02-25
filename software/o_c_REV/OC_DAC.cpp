@@ -1,5 +1,4 @@
 /*
-*   (C) Copyright 2013, Andrew Kroll (xxxajk)
 *   (C) Copyright 2015, 2016, Patrick Dowling, Max Stadler
 *
 *   This program is free software: you can redistribute it and/or modify
@@ -33,7 +32,7 @@
 *
 */
 
-#include "util/util_SPIFIFO.h"
+#include <SPI.h>
 #include "OC_DAC.h"
 #include "OC_gpio.h"
 #include "OC_options.h"
@@ -41,7 +40,7 @@
 #include "OC_autotune_presets.h"
 #include "OC_autotune.h"
 
-#define SPICLOCK_30MHz   (SPI_CTAR_PBR(0) | SPI_CTAR_BR(0) | SPI_CTAR_DBR) //(60 / 2) * ((1+1)/2) = 30 MHz (= 24MHz, when F_BUS == 48000000)
+#define SPICLOCK 4000000
 
 namespace OC {
 
@@ -52,9 +51,9 @@ void DAC::Init(CalibrationData *calibration_data) {
   
   restore_scaling(0x0);
 
-  // set up DAC pins 
-  OC::pinMode(DAC_CS, OUTPUT);
-  OC::pinMode(DAC_RST,OUTPUT);
+  // set up DAC pins
+  pinMode(DAC_CS, OUTPUT);
+  pinMode(DAC_RST,OUTPUT);
   
   #ifdef DAC8564 // A0 = 0, A1 = 0
     digitalWrite(DAC_RST, LOW); 
@@ -64,10 +63,10 @@ void DAC::Init(CalibrationData *calibration_data) {
 
   history_tail_ = 0;
   memset(history_, 0, sizeof(uint16_t) * kHistoryDepth * DAC_CHANNEL_LAST);
-
-  if (F_BUS == 60000000 || F_BUS == 48000000) 
-    SPIFIFO.begin(DAC_CS, SPICLOCK_30MHz, SPI_MODE0);  
-
+  SPI.usingInterrupt(0xFF); // ?? anyways, todo ... things have to be refactored, anyways, presumably
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(SPICLOCK, MSBFIRST, SPI_MODE0));
+  
   set_all(0xffff);
   Update();
 }
@@ -211,6 +210,7 @@ void set8565_CHA(uint32_t data) {
   #else
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   #endif
+  /* // todo
   #ifdef FLIP_180
   SPIFIFO.write(0b00010110, SPI_CONTINUE);
   #else
@@ -219,6 +219,9 @@ void set8565_CHA(uint32_t data) {
   SPIFIFO.write16(_data);
   SPIFIFO.read();
   SPIFIFO.read();
+  */
+  SPI.transfer(0x10);
+  SPI.transfer16(_data);
 }
 
 void set8565_CHB(uint32_t data) {
@@ -227,6 +230,7 @@ void set8565_CHB(uint32_t data) {
   #else
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   #endif
+  /* // todo
   #ifdef FLIP_180
   SPIFIFO.write(0b00010100, SPI_CONTINUE);
   #else
@@ -235,6 +239,9 @@ void set8565_CHB(uint32_t data) {
   SPIFIFO.write16(_data);
   SPIFIFO.read();
   SPIFIFO.read();
+  */
+  SPI.transfer(0x12);
+  SPI.transfer16(_data);
 }
 
 void set8565_CHC(uint32_t data) {
@@ -243,6 +250,7 @@ void set8565_CHC(uint32_t data) {
   #else
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   #endif
+  /* // todo
   #ifdef FLIP_180
   SPIFIFO.write(0b00010010, SPI_CONTINUE);
   #else
@@ -251,6 +259,9 @@ void set8565_CHC(uint32_t data) {
   SPIFIFO.write16(_data);
   SPIFIFO.read();
   SPIFIFO.read(); 
+  */
+  SPI.transfer(0x14);
+  SPI.transfer16(_data);
 }
 
 void set8565_CHD(uint32_t data) {
@@ -259,6 +270,7 @@ void set8565_CHD(uint32_t data) {
   #else
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   #endif
+  /* // todo
   #ifdef FLIP_180
   SPIFIFO.write(0b00010000, SPI_CONTINUE);
   #else
@@ -267,40 +279,8 @@ void set8565_CHD(uint32_t data) {
   SPIFIFO.write16(_data);
   SPIFIFO.read();
   SPIFIFO.read();
-}
-
-// adapted from https://github.com/xxxajk/spi4teensy3 (MISO disabled) : 
-
-void SPI_init() {
-
-  uint32_t ctar0, ctar1;
-
-  SIM_SCGC6 |= SIM_SCGC6_SPI0;
-  CORE_PIN11_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2);
-  CORE_PIN13_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2);
-  
-  ctar0 = SPI_CTAR_DBR; // default
-  #if   F_BUS == 60000000
-      ctar0 = (SPI_CTAR_PBR(0) | SPI_CTAR_BR(0) | SPI_CTAR_DBR); //(60 / 2) * ((1+1)/2) = 30 MHz
-  #elif F_BUS == 48000000
-      ctar0 = (SPI_CTAR_PBR(0) | SPI_CTAR_BR(0) | SPI_CTAR_DBR); //(48 / 2) * ((1+1)/2) = 24 MHz          
-  #endif
-  ctar1 = ctar0;
-  ctar0 |= SPI_CTAR_FMSZ(7);
-  ctar1 |= SPI_CTAR_FMSZ(15);
-  SPI0_MCR = SPI_MCR_MSTR | SPI_MCR_PCSIS(0x1F);
-  SPI0_MCR |= SPI_MCR_CLR_RXF | SPI_MCR_CLR_TXF;
-
-  // update ctars
-  uint32_t mcr = SPI0_MCR;
-  if (mcr & SPI_MCR_MDIS) {
-    SPI0_CTAR0 = ctar0;
-    SPI0_CTAR1 = ctar1;
-  } else {
-    SPI0_MCR = mcr | SPI_MCR_MDIS | SPI_MCR_HALT;
-    SPI0_CTAR0 = ctar0;
-    SPI0_CTAR1 = ctar1;
-    SPI0_MCR = mcr;
-  }
+  */
+  SPI.transfer(0x16);
+  SPI.transfer16(_data);
 }
 // OC_DAC

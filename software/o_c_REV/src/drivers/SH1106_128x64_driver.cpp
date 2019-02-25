@@ -24,6 +24,7 @@
 
 
 #include <Arduino.h>
+#include <SPI.h>
 #include "SH1106_128x64_driver.h"
 #include "../../OC_gpio.h"
 #include "../../OC_options.h"
@@ -33,9 +34,7 @@
 #include <DMAChannel.h>
 static DMAChannel page_dma;
 #endif
-#ifndef SPI_SR_RXCTR
-#define SPI_SR_RXCTR 0XF0
-#endif
+
 
 static uint8_t SH1106_data_start_seq[] = {
 // u8g_dev_ssd1306_128x64_data_start
@@ -84,9 +83,9 @@ static uint8_t SH1106_display_on_seq[] = {
 
 /*static*/
 void SH1106_128x64_Driver::Init() {
-  OC::pinMode(OLED_CS, OUTPUT);
-  OC::pinMode(OLED_RST, OUTPUT);
-  OC::pinMode(OLED_DC, OUTPUT);
+  pinMode(OLED_CS, OUTPUT);
+  pinMode(OLED_RST, OUTPUT);
+  pinMode(OLED_DC, OUTPUT);
   //SPI_init(); 
 
   // u8g_teensy::U8G_COM_MSG_INIT
@@ -112,11 +111,20 @@ void SH1106_128x64_Driver::Init() {
   digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0),             /* disable chip */
 
 #ifdef DMA_PAGE_TRANSFER
-  page_dma.destination((volatile uint8_t&)SPI0_PUSHR);
+  // todo
+  // see https://github.com/manitou48/teensy4/blob/master/spidma.ino
+  LPSPI4_CR &= ~LPSPI_CR_MEN;//disable LPSPI:
+  LPSPI4_CFGR1 |= LPSPI_CFGR1_NOSTALL; //prevent stall from RX
+  LPSPI4_FCR = 0x0; // Fifo Watermark
+  LPSPI4_DER = LPSPI_DER_TDDE; //TX DMA Request Enable
+  LPSPI4_CR |= LPSPI_CR_MEN; //enable LPSPI:
+  page_dma.begin(true); // Allocate the DMA channel first 
+  //
+  page_dma.destination((volatile uint8_t&) LPSPI4_TDR);
   page_dma.transferSize(1);
   page_dma.transferCount(kPageSize);
   page_dma.disableOnCompletion();
-  page_dma.triggerAtHardwareEvent(DMAMUX_SOURCE_SPI0_TX);
+  page_dma.triggerAtHardwareEvent(DMAMUX_SOURCE_LPSPI4_TX);
   page_dma.disable();
 #endif
 
@@ -130,9 +138,12 @@ void SH1106_128x64_Driver::Flush() {
   digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0)
   page_dma.clearComplete();
   page_dma.disable();
-  // DmaSpi.h::post_finishCurrentTransfer_impl
-  SPI0_RSER = 0;
-  SPI0_SR = 0xFF0F0000;
+  //
+  // todo: disable interupts? (was: SPI0_RSER = 0; SPI0_SR = 0xFF0F0000;
+  // ???
+  // LPSPI4_DER = 0x0 // // DMA no longer doing TX (or RX)
+  // LPSPI4_CR = LPSPI_CR_MEN | LPSPI_CR_RRF | LPSPI_CR_RTF;   // actually clear both... (maybe not, see setup, this would never recover)
+  // LPSPI4_SR = 0x3F00;  // clear out all of the other status...
 #endif
 }
 
@@ -140,6 +151,7 @@ static uint8_t empty_page[SH1106_128x64_Driver::kPageSize];
 
 /*static*/
 void SH1106_128x64_Driver::Clear() {
+
   memset(empty_page, 0, sizeof(kPageSize));
 
   SH1106_data_start_seq[2] = 0xb0 | 0;
@@ -167,10 +179,7 @@ void SH1106_128x64_Driver::SendPage(uint_fast8_t index, const uint8_t *data) {
   digitalWriteFast(OLED_DC, HIGH); // /* data mode */
 
 #ifdef DMA_PAGE_TRANSFER
-  // DmaSpi.h::pre_cs_impl()
-  SPI0_SR = 0xFF0F0000;
-  SPI0_RSER = SPI_RSER_RFDF_RE | SPI_RSER_RFDF_DIRS | SPI_RSER_TFFF_RE | SPI_RSER_TFFF_DIRS;
-
+  //todo
   page_dma.sourceBuffer(data, kPageSize);
   page_dma.enable(); // go
 #else
@@ -180,46 +189,7 @@ void SH1106_128x64_Driver::SendPage(uint_fast8_t index, const uint8_t *data) {
 }
 
 void SH1106_128x64_Driver::SPI_send(void *bufr, size_t n) {
-
-  // adapted from https://github.com/xxxajk/spi4teensy3
-  int i;
-  int nf;
-  uint8_t *buf = (uint8_t *)bufr;
-
-  if (n & 1) {
-    uint8_t b = *buf++;
-    // clear any data in RX/TX FIFOs, and be certain we are in master mode.
-    SPI0_MCR = SPI_MCR_MSTR | SPI_MCR_CLR_RXF | SPI_MCR_CLR_TXF | SPI_MCR_PCSIS(0x1F);
-    SPI0_SR = SPI_SR_TCF;
-    SPI0_PUSHR = SPI_PUSHR_CONT | b;
-    while (!(SPI0_SR & SPI_SR_TCF));
-    n--;
-  }
-  // clear any data in RX/TX FIFOs, and be certain we are in master mode.
-  SPI0_MCR = SPI_MCR_MSTR | SPI_MCR_CLR_RXF | SPI_MCR_CLR_TXF | SPI_MCR_PCSIS(0x1F);
-  // initial number of words to push into TX FIFO
-  nf = n / 2 < 3 ? n / 2 : 3;
-  // limit for pushing data into TX FIFO
-  uint8_t* limit = buf + n;
-  for (i = 0; i < nf; i++) {
-    uint16_t w = (*buf++) << 8;
-    w |= *buf++;
-    SPI0_PUSHR = SPI_PUSHR_CONT | SPI_PUSHR_CTAS(1) | w;
-  }
-  // write data to TX FIFO
-  while (buf < limit) {
-          uint16_t w = *buf++ << 8;
-          w |= *buf++;
-          while (!(SPI0_SR & SPI_SR_RXCTR));
-          SPI0_PUSHR = SPI_PUSHR_CONT | SPI_PUSHR_CTAS(1) | w;
-          SPI0_POPR;
-  }
-  // wait for data to be sent
-  while (nf) {
-          while (!(SPI0_SR & SPI_SR_RXCTR));
-          SPI0_POPR;
-          nf--;
-  }
+  SPI.transfer(&bufr, n); // todo
 }
 
 /*static*/

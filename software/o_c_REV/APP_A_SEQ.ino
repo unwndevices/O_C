@@ -34,7 +34,6 @@
 #include "OC_input_maps.h"
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
-#include "extern/dspinst.h"
 #include "util/util_arp.h"
 #include "peaks_multistage_envelope.h"
 
@@ -927,17 +926,19 @@ public:
     
             // when multiplying, skip too closely spaced triggers:
             if (_multiplier > MULT_BY_ONE) {
-               prev_channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(channel_frequency_in_ticks_, TICK_SCALE);
+               // todo
+               //prev_channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(channel_frequency_in_ticks_, TICK_SCALE);
                // new frequency:    
-               channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(ext_frequency_in_ticks_, multipliers_[_multiplier-MULT_BY_ONE]); 
+               //channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(ext_frequency_in_ticks_, multipliers_[_multiplier-MULT_BY_ONE]); 
             }
             else {
                prev_channel_frequency_in_ticks_ = 0x0;
                // new frequency (used for pulsewidth):
-               channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(ext_frequency_in_ticks_, pw_scale_[_multiplier]) << 6;
+               // todo
+               // channel_frequency_in_ticks_ = multiply_u32xu32_rshift32(ext_frequency_in_ticks_, pw_scale_[_multiplier]) << 6;
             }
                
-            tickjitter_ = multiply_u32xu32_rshift32(channel_frequency_in_ticks_, TICK_JITTER);  
+            tickjitter_ = 0; // todo multiply_u32xu32_rshift32(channel_frequency_in_ticks_, TICK_JITTER);  
          }
          // limit frequency to > 0
          if (!channel_frequency_in_ticks_)  
@@ -1223,16 +1224,18 @@ public:
             // recalculate (in ticks), if new pulsewidth setting:
             if (prev_pulsewidth_ != _pulsewidth || ! subticks_) {
                 if (!_gates || _we_cannot_echo) {
-                  int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
-                  _fraction = signed_saturate_rshift(_fraction, 16, 0);
-                  pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
+                  //int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
+                  //_fraction = signed_saturate_rshift(_fraction, 16, 0);
+                  //pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
+                  // todo
                 }
                 else { // put out gates/half duty cycle:
                   pulse_width_in_ticks_ = channel_frequency_in_ticks_ >> 1;
                   
                   if (_pulsewidth != PULSEW_MAX) { // CV?
-                    pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
-                    pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
+                    // todo
+                    //pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
+                    //pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
                   }
                 }
             }
@@ -2619,4 +2622,3 @@ void SEQ_screensaver() {
   seq_channel[0].RenderScreensaver();
   seq_channel[1].RenderScreensaver();
 }
-

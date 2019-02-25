@@ -773,17 +773,19 @@ public:
                 if (prev_pulsewidth_ != _pulsewidth || ! ticks_) {
                   
                     if (!_gates) {
-                      int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
-                      _fraction = signed_saturate_rshift(_fraction, 16, 0);
-                      pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
+                      // todo
+                      //int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
+                      //_fraction = signed_saturate_rshift(_fraction, 16, 0);
+                      //pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
                     }
                     else { // put out gates/half duty cycle:
 
                       pulse_width_in_ticks_ = channel_frequency_in_ticks_ >> 1;
                       
                       if (_pulsewidth != PULSEW_MAX) { // CV?
-                        pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
-                        pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
+                        // todo
+                        //pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
+                        //pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
                       }
                     }
                 }

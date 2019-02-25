@@ -1244,6 +1244,6 @@ void ENVGEN_debug() {
 }
 #endif // ENVGEN_DEBUG
 
-void FASTRUN ENVGEN_isr() {
+void ENVGEN_isr() {
   envgen.ISR();
 }

@@ -30,7 +30,6 @@
 #include "OC_strings.h"
 #include "OC_visualfx.h"
 #include "peaks_bytebeat.h"
-#include "extern/dspinst.h"
 
 namespace menu = OC::menu; // Ugh. This works for all .ino files
 
@@ -675,8 +674,9 @@ public:
           
             // scale sample
              if (_mult != MULT_ONE) {  
-               _sample = signed_multiply_32x16b(multipliers[_mult], _sample);
-               _sample = signed_saturate_rshift(_sample, 16, 0);
+               // todo
+               //_sample = signed_multiply_32x16b(multipliers[_mult], _sample);
+               //_sample = signed_saturate_rshift(_sample, 16, 0);
              }
 
              _sample = quantizer_.Process(_sample, _root << 7, _transpose);
@@ -1098,4 +1098,3 @@ void ASR_debug() {
  }
 }
 #endif // ASR_DEBUG
-

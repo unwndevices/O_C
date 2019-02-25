@@ -5,31 +5,37 @@
 
 namespace OC {
 
-/*static*/ ::ADC ADC::adc_;
+// /*static*/ ::ADC ADC::adc_;
 /*static*/ ADC::CalibrationData *ADC::calibration_data_;
 /*static*/ uint32_t ADC::raw_[ADC_CHANNEL_LAST];
 /*static*/ uint32_t ADC::smoothed_[ADC_CHANNEL_LAST];
 /*static*/ volatile bool ADC::ready_;
 
-constexpr uint16_t ADC::SCA_CHANNEL_ID[DMA_NUM_CH]; // ADCx_SCA register channel numbers
+constexpr uint16_t ADC::CHANNEL_INPUT_SELECT[DMA_NUM_CH]; // channel select
 DMAChannel* dma0 = new DMAChannel(false); // dma0 channel, fills adcbuffer_0
-DMAChannel* dma1 = new DMAChannel(false); // dma1 channel, updates ADC0_SC1A which holds the channel/pin IDs
+DMAChannel* dma1 = new DMAChannel(false); // dma1 channel, updates ADC1_HC0 which holds the channel/pin IDs
 DMAMEM static volatile uint16_t __attribute__((aligned(DMA_BUF_SIZE+0))) adcbuffer_0[DMA_BUF_SIZE];
 
 /*static*/ void ADC::Init(CalibrationData *calibration_data) {
 
-  adc_.setReference(ADC_REF_3V3);
-  adc_.setResolution(kAdcScanResolution);
-  adc_.setConversionSpeed(kAdcConversionSpeed);
-  adc_.setSamplingSpeed(kAdcSamplingSpeed);
-  adc_.setAveraging(kAdcScanAverages);
+  //adc_.setReference(ADC_REF_3V3);
+  analogReadRes(kAdcScanResolution); // adc_.setResolution(kAdcScanResolution);
+  //adc_.setConversionSpeed(kAdcConversionSpeed);
+  //adc_.setSamplingSpeed(kAdcSamplingSpeed);
+  analogReadAveraging(kAdcScanAverages);//adc_.setAveraging(kAdcScanAverages);
+
+  uint32_t i, sum = 0;
+  // do some normal reads / DC level ... 
+  for (i = 0; i < 1024; i++) {
+    sum += analogRead(CV1) + analogRead(CV2) + analogRead(CV3) + analogRead(CV4);
+  }
 
   calibration_data_ = calibration_data;
   std::fill(raw_, raw_ + ADC_CHANNEL_LAST, 0);
   std::fill(smoothed_, smoothed_ + ADC_CHANNEL_LAST, 0);
   std::fill(adcbuffer_0, adcbuffer_0 + DMA_BUF_SIZE, 0);
   
-  adc_.enableDMA();
+  ADC1_GC |= ADC_GC_DMAEN | ADC_GC_ADCO; //adc_.enableDMA();
 }
 
 /*static*/ void ADC::DMA_ISR() {
@@ -50,8 +56,13 @@ DMAMEM static volatile uint16_t __attribute__((aligned(DMA_BUF_SIZE+0))) adcbuff
 
 void ADC::Init_DMA() {
   
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_00 = 0xb0; // disable 'keeper'
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_01 = 0xb0; // disable 'keeper'
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_10 = 0xb0; // disable 'keeper'
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_06 = 0xb0; // disable 'keeper'
+  
   dma0->begin(true); // allocate the DMA channel 
-  dma0->TCD->SADDR = &ADC0_RA; 
+  dma0->TCD->SADDR = &ADC1_R0; 
   dma0->TCD->SOFF = 0;
   dma0->TCD->ATTR = 0x101;
   dma0->TCD->NBYTES = 2;
@@ -61,19 +72,19 @@ void ADC::Init_DMA() {
   dma0->TCD->DLASTSGA = -(2 * DMA_BUF_SIZE);
   dma0->TCD->BITER = DMA_BUF_SIZE;
   dma0->TCD->CITER = DMA_BUF_SIZE; 
-  dma0->triggerAtHardwareEvent(DMAMUX_SOURCE_ADC0);
+  dma0->triggerAtHardwareEvent(DMAMUX_SOURCE_ADC1);
   dma0->disableOnCompletion();
   dma0->interruptAtCompletion();
   dma0->attachInterrupt(DMA_ISR);
 
   dma1->begin(true); // allocate the DMA channel 
-  dma1->TCD->SADDR = &ADC::SCA_CHANNEL_ID[0];
+  dma1->TCD->SADDR = &ADC::CHANNEL_INPUT_SELECT[0];
   dma1->TCD->SOFF = 2; // source increment each transfer (n bytes)
   dma1->TCD->ATTR = 0x101;
   dma1->TCD->SLAST = - DMA_NUM_CH*2; // num ADC0 samples * 2
   dma1->TCD->BITER = DMA_NUM_CH;
   dma1->TCD->CITER = DMA_NUM_CH;
-  dma1->TCD->DADDR = &ADC0_SC1A;
+  dma1->TCD->DADDR = &ADC1_HC0;
   dma1->TCD->DLASTSGA = 0;
   dma1->TCD->NBYTES = 2;
   dma1->TCD->DOFF = 0;

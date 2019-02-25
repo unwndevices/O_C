@@ -562,8 +562,9 @@ public:
                 CONSTRAIN(octave, 0, 6);
                 sample = OC::DAC::get_octave_offset(dac_channel, octave) + (get_transpose() << 7); 
                 // range is actually 120 (10 oct) but 65535 / 128 is close enough
-                sample += multiply_u32xu32_rshift32((static_cast<uint32_t>(range) * 65535U) >> 7, bb << 16);
-                sample = USAT16(sample);
+                // todo
+                //sample += multiply_u32xu32_rshift32((static_cast<uint32_t>(range) * 65535U) >> 7, bb << 16);
+                //sample = USAT16(sample);
                 history_sample = sample;
               }
             }
@@ -703,8 +704,9 @@ public:
                 CONSTRAIN(octave, 0, 6);
                 sample = OC::DAC::get_octave_offset(dac_channel, octave) + (get_transpose() << 7); 
                 // range is actually 120 (10 oct) but 65535 / 128 is close enough
-                sample += multiply_u32xu32_rshift32((static_cast<uint32_t>(range_) * 65535U) >> 7, is << 20);
-                sample = USAT16(sample);
+                // todo
+                //sample += multiply_u32xu32_rshift32((static_cast<uint32_t>(range_) * 65535U) >> 7, is << 20);
+                //sample = USAT16(sample);
                 history_sample = sample;
               }
             }
@@ -1565,4 +1567,3 @@ void QQ_debug() {
  }
 }
 #endif // QQ_DEBUG
-

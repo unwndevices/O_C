@@ -23,7 +23,7 @@
 
 // Main startup/loop for O&C firmware
 
-#include <EEPROM.h>
+//#include <EEPROM.h>
 
 #include "OC_apps.h"
 #include "OC_core.h"
@@ -38,7 +38,7 @@
 #include "OC_version.h"
 #include "OC_options.h"
 #include "src/drivers/display.h"
-#include "src/drivers/ADC/OC_util_ADC.h"
+//#include "src/drivers/ADC/OC_util_ADC.h"
 #include "util/util_debugpins.h"
 
 unsigned long LAST_REDRAW_TIME = 0;
@@ -96,14 +96,13 @@ void FASTRUN CORE_timer_ISR() {
 
 void setup() {
   delay(50);
-  NVIC_SET_PRIORITY(IRQ_PORTB, 0); // TR1 = 0 = PTB16
-  SPI_init();
+  //NVIC_SET_PRIORITY(IRQ_PORTB, 0); // TR1 = 0 = PTB16
   SERIAL_PRINTLN("* O&C BOOTING...");
   SERIAL_PRINTLN("* %s", OC_VERSION);
 
   OC::DEBUG::Init();
   OC::DigitalInputs::Init();
-  delay(400); 
+  delay(400);
   OC::ADC::Init(&OC::calibration_data.adc); // Yes, it's using the calibration_data before it's loaded...
   OC::ADC::Init_DMA();
   OC::DAC::Init(&OC::calibration_data.dac);
@@ -157,7 +156,7 @@ void FASTRUN loop() {
       OC::ui.AppSettings();
       ui_mode = OC::UI_MODE_MENU;
     }
-
+    
     // Refresh display
     if (MENU_REDRAW) {
       GRAPHICS_BEGIN_FRAME(false); // Don't busy wait

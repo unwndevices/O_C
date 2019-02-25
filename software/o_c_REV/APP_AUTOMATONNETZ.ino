@@ -357,7 +357,7 @@ size_t Automatonnetz_storageSize() {
     GRID_CELLS * TransformCell::storageSize();
 }
 
-void FASTRUN AutomatonnetzState::ISR() {
+void AutomatonnetzState::ISR() {
   update_trigger_out();
 
   uint32_t triggers = OC::DigitalInputs::clocked();

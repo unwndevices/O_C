@@ -59,11 +59,11 @@ OC::App available_apps[] = {
   DECLARE_APP('D','Q', "Meta-Q", DQ, DQ_isr),
   DECLARE_APP('P','L', "Quadraturia", POLYLFO, POLYLFO_isr),
   DECLARE_APP('L','R', "Low-rents", LORENZ, LORENZ_isr),
-  DECLARE_APP('E','G', "Piqued", ENVGEN, ENVGEN_isr),
-  DECLARE_APP('S','Q', "Sequins", SEQ, SEQ_isr),
-  DECLARE_APP('B','B', "Dialectic Ping Pong", BBGEN, BBGEN_isr),
-  DECLARE_APP('B','Y', "Viznutcracker sweet", BYTEBEATGEN, BYTEBEATGEN_isr),
-  DECLARE_APP('C','Q', "Acid Curds", CHORDS, CHORDS_isr),
+  //DECLARE_APP('E','G', "Piqued", ENVGEN, ENVGEN_isr),
+  //DECLARE_APP('S','Q', "Sequins", SEQ, SEQ_isr),
+  //DECLARE_APP('B','B', "Dialectic Ping Pong", BBGEN, BBGEN_isr),
+  //DECLARE_APP('B','Y', "Viznutcracker sweet", BYTEBEATGEN, BYTEBEATGEN_isr),
+  //DECLARE_APP('C','Q', "Acid Curds", CHORDS, CHORDS_isr),
   DECLARE_APP('R','F', "References", REFS, REFS_isr)
 };
 #endif
@@ -252,10 +252,12 @@ void Init(bool reset_settings) {
   if (reset_settings) {
     if (ui.ConfirmReset()) {
       SERIAL_PRINTLN("Erase EEPROM ...");
+      /* //todo
       EEPtr d = EEPROM_GLOBALSETTINGS_START;
       size_t len = EEPROMStorage::LENGTH - EEPROM_GLOBALSETTINGS_START;
       while (len--)
         *d++ = 0;
+      */
       SERIAL_PRINTLN("...done");
       SERIAL_PRINTLN("Skip settings, using defaults...");
       global_settings_storage.Init();

@@ -6,7 +6,6 @@
 #include "OC_menus.h"
 #include "OC_ui.h"
 #include "util/util_misc.h"
-#include "extern/dspinst.h"
 
 #ifdef POLYLFO_DEBUG  
 extern void POLYLFO_debug();
