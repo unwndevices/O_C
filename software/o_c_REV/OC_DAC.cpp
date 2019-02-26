@@ -41,6 +41,8 @@
 #include "OC_autotune.h"
 
 #define SPICLOCK 4000000
+#define ASSERT_CS digitalWriteFast(DAC_CS, LOW);
+#define DEASSERT_CS digitalWriteFast(DAC_CS, HIGH);
 
 namespace OC {
 
@@ -60,7 +62,8 @@ void DAC::Init(CalibrationData *calibration_data) {
   #else  // default to DAC8565 - pull RST high 
     digitalWrite(DAC_RST, HIGH);
   #endif
-
+  
+  digitalWrite(DAC_CS, HIGH);
   history_tail_ = 0;
   memset(history_, 0, sizeof(uint16_t) * kHistoryDepth * DAC_CHANNEL_LAST);
   SPI.usingInterrupt(0xFF); // ?? anyways, todo ... things have to be refactored, anyways, presumably
@@ -220,8 +223,10 @@ void set8565_CHA(uint32_t data) {
   SPIFIFO.read();
   SPIFIFO.read();
   */
+  ASSERT_CS;
   SPI.transfer(0x10);
   SPI.transfer16(_data);
+  DEASSERT_CS;
 }
 
 void set8565_CHB(uint32_t data) {
@@ -240,8 +245,10 @@ void set8565_CHB(uint32_t data) {
   SPIFIFO.read();
   SPIFIFO.read();
   */
+  ASSERT_CS;
   SPI.transfer(0x12);
   SPI.transfer16(_data);
+  DEASSERT_CS;
 }
 
 void set8565_CHC(uint32_t data) {
@@ -260,8 +267,10 @@ void set8565_CHC(uint32_t data) {
   SPIFIFO.read();
   SPIFIFO.read(); 
   */
+  ASSERT_CS;
   SPI.transfer(0x14);
   SPI.transfer16(_data);
+  DEASSERT_CS;
 }
 
 void set8565_CHD(uint32_t data) {
@@ -280,7 +289,9 @@ void set8565_CHD(uint32_t data) {
   SPIFIFO.read();
   SPIFIFO.read();
   */
+  ASSERT_CS;
   SPI.transfer(0x16);
   SPI.transfer16(_data);
+  DEASSERT_CS;
 }
 // OC_DAC
