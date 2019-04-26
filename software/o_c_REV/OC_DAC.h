@@ -211,7 +211,7 @@ public:
     set8565_CHB(values_[DAC_CHANNEL_B]);
     set8565_CHC(values_[DAC_CHANNEL_C]);
     set8565_CHD(values_[DAC_CHANNEL_D]);
-
+    
     size_t tail = history_tail_;
     history_[DAC_CHANNEL_A][tail] = values_[DAC_CHANNEL_A];
     history_[DAC_CHANNEL_B][tail] = values_[DAC_CHANNEL_B];

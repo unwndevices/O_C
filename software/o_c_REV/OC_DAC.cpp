@@ -207,22 +207,10 @@ volatile size_t DAC::history_tail_;
 uint8_t DAC::DAC_scaling[DAC_CHANNEL_LAST];
 }; // namespace OC
 
+
 void set8565_CHA(uint32_t data) {
-  #ifdef BUCHLA_cOC
-  uint32_t _data = data;
-  #else
+
   uint32_t _data = OC::DAC::MAX_VALUE - data;
-  #endif
-  /* // todo
-  #ifdef FLIP_180
-  SPIFIFO.write(0b00010110, SPI_CONTINUE);
-  #else
-  SPIFIFO.write(0b00010000, SPI_CONTINUE);
-  #endif
-  SPIFIFO.write16(_data);
-  SPIFIFO.read();
-  SPIFIFO.read();
-  */
   ASSERT_CS;
   SPI.transfer(0x10);
   SPI.transfer16(_data);
@@ -230,21 +218,8 @@ void set8565_CHA(uint32_t data) {
 }
 
 void set8565_CHB(uint32_t data) {
-  #ifdef BUCHLA_cOC
-  uint32_t _data = data;
-  #else
+
   uint32_t _data = OC::DAC::MAX_VALUE - data;
-  #endif
-  /* // todo
-  #ifdef FLIP_180
-  SPIFIFO.write(0b00010100, SPI_CONTINUE);
-  #else
-  SPIFIFO.write(0b00010010, SPI_CONTINUE);
-  #endif
-  SPIFIFO.write16(_data);
-  SPIFIFO.read();
-  SPIFIFO.read();
-  */
   ASSERT_CS;
   SPI.transfer(0x12);
   SPI.transfer16(_data);
@@ -252,21 +227,8 @@ void set8565_CHB(uint32_t data) {
 }
 
 void set8565_CHC(uint32_t data) {
-  #ifdef BUCHLA_cOC
-  uint32_t _data = data;
-  #else
+
   uint32_t _data = OC::DAC::MAX_VALUE - data;
-  #endif
-  /* // todo
-  #ifdef FLIP_180
-  SPIFIFO.write(0b00010010, SPI_CONTINUE);
-  #else
-  SPIFIFO.write(0b00010100, SPI_CONTINUE);
-  #endif
-  SPIFIFO.write16(_data);
-  SPIFIFO.read();
-  SPIFIFO.read(); 
-  */
   ASSERT_CS;
   SPI.transfer(0x14);
   SPI.transfer16(_data);
@@ -274,21 +236,8 @@ void set8565_CHC(uint32_t data) {
 }
 
 void set8565_CHD(uint32_t data) {
-  #ifdef BUCHLA_cOC
-  uint32_t _data = data;
-  #else
+
   uint32_t _data = OC::DAC::MAX_VALUE - data;
-  #endif
-  /* // todo
-  #ifdef FLIP_180
-  SPIFIFO.write(0b00010000, SPI_CONTINUE);
-  #else
-  SPIFIFO.write(0b00010110, SPI_CONTINUE);
-  #endif
-  SPIFIFO.write16(_data);
-  SPIFIFO.read();
-  SPIFIFO.read();
-  */
   ASSERT_CS;
   SPI.transfer(0x16);
   SPI.transfer16(_data);

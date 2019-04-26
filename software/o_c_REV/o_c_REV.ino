@@ -69,16 +69,16 @@ void FASTRUN CORE_timer_ISR() {
   // a DMA transfer to the display things are fairly nicely interleaved. In the
   // next ISR, the display transfer is finalized (CS update).
 
-  display::Flush();
+  //display::Flush();
   OC::DAC::Update();
-  display::Update();
+  //display::Update();
 
   // see OC_ADC.h for details; empirically (with current parameters), Scan_DMA() picks up new samples @ 5.55kHz
-  OC::ADC::Scan_DMA();
+  //OC::ADC::Scan_DMA();
 
   // Pin changes are tracked in separate ISRs, so depending on prio it might
   // need extra precautions.
-  OC::DigitalInputs::Scan();
+  //OC::DigitalInputs::Scan();
 
 #ifndef OC_UI_SEPARATE_ISR
   TODO needs a counter
@@ -86,8 +86,8 @@ void FASTRUN CORE_timer_ISR() {
 #endif
 
   ++OC::CORE::ticks;
-  if (OC::CORE::app_isr_enabled)
-    OC::apps::ISR();
+  //if (OC::CORE::app_isr_enabled)
+    //OC::apps::ISR();
 
   OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
 }
@@ -107,13 +107,13 @@ void setup() {
   OC::ADC::Init_DMA();
   OC::DAC::Init(&OC::calibration_data.dac);
 
-  display::Init();
+  //display::Init();
 
-  GRAPHICS_BEGIN_FRAME(true);
-  GRAPHICS_END_FRAME();
+  //GRAPHICS_BEGIN_FRAME(true);
+  //GRAPHICS_END_FRAME();
 
   calibration_load();
-  display::AdjustOffset(OC::calibration_data.display_offset);
+  //display::AdjustOffset(OC::calibration_data.display_offset);
 
   OC::menu::Init();
   OC::ui.Init();
