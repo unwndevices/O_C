@@ -34,9 +34,7 @@
 #include <Arduino.h>
 
 // Easier names for the boards
-#if defined(__IMXRT1062__) // Teensy 4.0
-#define ADC_TEENSY_4_0
-#elif defined(__MK20DX256__) // Teensy 3.1
+#if defined(__MK20DX256__) // Teensy 3.1
 #define ADC_TEENSY_3_1
 #elif defined(__MK20DX128__) // Teensy 3.0
 #define ADC_TEENSY_3_0
@@ -53,9 +51,7 @@
 
 
 // Teensy 3.1 has 2 ADCs, Teensy 3.0 and LC only 1.
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_NUM_ADCS 2
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_NUM_ADCS 2
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_NUM_ADCS 1
@@ -68,9 +64,7 @@
 #endif
 
 // Use DMA?
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_USE_DMA 1
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_USE_DMA 1
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_USE_DMA 1
@@ -83,9 +77,7 @@
 #endif
 
 // Use PGA?
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_USE_PGA 0
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_USE_PGA 1
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_USE_PGA 0
@@ -98,9 +90,7 @@
 #endif
 
 // Use PDB?
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_USE_PDB 1
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_USE_PDB 1
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_USE_PDB 1
@@ -113,8 +103,6 @@
 #endif
 
 // Has internal reference?
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_USE_INTERNAL 1
 #if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_USE_INTERNAL 1
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
@@ -127,7 +115,7 @@
         #define ADC_USE_INTERNAL 1
 #endif
 
-// Select the voltage reference sources for ADC. 
+// Select the voltage reference sources for ADC.
 #define ADC_REF_DEFAULT    0
 #define ADC_REF_ALT        1
 #if defined(ADC_TEENSY_3_0) || defined(ADC_TEENSY_3_1) || defined(ADC_TEENSY_3_4) || defined(ADC_TEENSY_3_5)
@@ -146,9 +134,7 @@
 #endif
 
 // max number of pins, size of channel2sc1aADCx
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_MAX_PIN (40)
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_MAX_PIN (40)
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_MAX_PIN (37)
@@ -162,9 +148,7 @@
 
 
 // number of differential pairs PER ADC!!
-#if defined(ADC_TEENSY_4_0) // Teensy 4.0
-        #define ADC_DIFF_PAIRS (0) // normal and with PGA
-#elif defined(ADC_TEENSY_3_1) // Teensy 3.1
+#if defined(ADC_TEENSY_3_1) // Teensy 3.1
         #define ADC_DIFF_PAIRS (2) // normal and with PGA
 #elif defined(ADC_TEENSY_3_0) // Teensy 3.0
         #define ADC_DIFF_PAIRS (2)
@@ -911,7 +895,7 @@ private:
     *   We can change this functions depending on the board.
     *   Teensy 3.x use bitband while Teensy LC has a more advanced bit manipulation engine.
     */
-#if defined(ADC_TEENSY_4_0) || defined(ADC_TEENSY_3_1) || defined(ADC_TEENSY_3_0) || defined(ADC_TEENSY_3_4) || defined(ADC_TEENSY_3_5)
+#if defined(ADC_TEENSY_3_1) || defined(ADC_TEENSY_3_0) || defined(ADC_TEENSY_3_4) || defined(ADC_TEENSY_3_5)
     // bitband
 #define ADC_BITBAND_ADDR(reg, bit) (((uint32_t)(reg) - 0x40000000) * 32 + (bit) * 4 + 0x42000000)
 
