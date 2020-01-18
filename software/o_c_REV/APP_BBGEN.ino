@@ -400,6 +400,6 @@ void BBGEN_screensaver() {
   OC::scope_render();
 }
 
-void BBGEN_isr() {
+void FASTRUN BBGEN_isr() {
   bbgen.ISR();
 }

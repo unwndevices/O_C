@@ -40,8 +40,6 @@ void OC::DigitalInputs::Init() {
   };
 
   for (auto pin : pins) {
-    Serial.print("PINMODE : ");
-    Serial.println(pin.pin);
     pinMode(pin.pin, OC_GPIO_TRx_PINMODE);
     attachInterrupt(pin.pin, pin.isr_fn, FALLING);
   }
@@ -63,7 +61,7 @@ void OC::DigitalInputs::Init() {
   // exactly simultaneously though, but that's micro-timing dependent even if
   // the pins have higher prio.
 
-  NVIC_SET_PRIORITY(IRQ_PORTB, 0); // TR1 = 0 = PTB16
+  //  NVIC_SET_PRIORITY(IRQ_PORTB, 0); // TR1 = 0 = PTB16
   // Defaults is 0, or set OC_GPIO_ISR_PRIO for all ports
 }
 

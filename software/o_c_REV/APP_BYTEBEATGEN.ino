@@ -596,6 +596,6 @@ void BYTEBEATGEN_screensaver() {
   }
 }
 
-void BYTEBEATGEN_isr() {
+void FASTRUN  BYTEBEATGEN_isr() {
   bytebeatgen.ISR();
 }
