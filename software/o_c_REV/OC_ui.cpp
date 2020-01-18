@@ -225,7 +225,6 @@ delay(1000000);
     /* fixes spurious button presses when booting ? */
     while (event_queue_.available())
       (void)event_queue_.PullEvent();
-  SERIAL_PRINTLN("UI OC -END FRAME");
 
     GRAPHICS_END_FRAME();
 

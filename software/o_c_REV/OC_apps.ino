@@ -252,12 +252,12 @@ void Init(bool reset_settings) {
   if (reset_settings) {
     if (ui.ConfirmReset()) {
       SERIAL_PRINTLN("Erase EEPROM ...");
-      /* //todo
+     // /* //todo
       EEPtr d = EEPROM_GLOBALSETTINGS_START;
       size_t len = EEPROMStorage::LENGTH - EEPROM_GLOBALSETTINGS_START;
       while (len--)
         *d++ = 0;
-      */
+     // */
       SERIAL_PRINTLN("...done");
       SERIAL_PRINTLN("Skip settings, using defaults...");
       global_settings_storage.Init();

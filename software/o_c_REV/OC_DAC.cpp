@@ -41,8 +41,11 @@
 #include "OC_autotune.h"
 
 #define SPICLOCK 4000000
-#define ASSERT_CS digitalWriteFast(DAC_CS, LOW);
-#define DEASSERT_CS digitalWriteFast(DAC_CS, HIGH);
+//#define ASSERT_CS digitalWriteFast(DAC_CS, LOW);
+//#define DEASSERT_CS digitalWriteFast(DAC_CS, HIGH);
+
+#define ASSERT_CS do {} while(0)
+#define DEASSERT_CS do {} while(0)
 
 namespace OC {
 
@@ -66,7 +69,7 @@ void DAC::Init(CalibrationData *calibration_data) {
   digitalWrite(DAC_CS, HIGH);
   history_tail_ = 0;
   memset(history_, 0, sizeof(uint16_t) * kHistoryDepth * DAC_CHANNEL_LAST);
-  SPI1.usingInterrupt(0xFF); // ?? anyways, todo ... things have to be refactored, anyways, presumably
+  SPI1.usingInterrupt(0xFF);
   SPI1.begin();
   SPI1.beginTransaction(SPISettings(SPICLOCK, MSBFIRST, SPI_MODE0));
   

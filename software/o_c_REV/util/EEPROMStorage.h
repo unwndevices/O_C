@@ -21,37 +21,31 @@
 #ifndef EEPROMSTORAGE_H_
 #define EEPROMSTORAGE_H_
 
-//#include <EEPROM.h>
+#include <EEPROM.h>
 
 /* Define a storage implemenation using teensy EEPROM */
 struct EEPROMStorage {
   static const size_t LENGTH = 2048;
 
   static void update(size_t addr, const void *data, size_t length) {
-    /* ...todo
     EEPtr e = addr;
     const uint8_t *src = (const uint8_t *)data;
     while (length--)
       (*e++).update(*src++);
-    */
   }
 
   static void write(size_t addr, const void *data, size_t length) {
-    /*
     EEPtr e = addr;
     const uint8_t *src = (const uint8_t*)data;
     while (length--)
       (*e++) = (*src++);
-    */
   }
 
   static void read(size_t addr, void *data, size_t length) {
-    /*
     EEPtr e = addr;
     uint8_t *dst = (uint8_t*)data;
     while (length--)
       *dst++ = *e++;
-    */  
   }
 };
 

@@ -35,6 +35,8 @@
 #include "OC_scales.h"
 #include "OC_scale_edit.h"
 #include "OC_strings.h"
+#include "extern/dspinst.h"
+
 
 #ifdef BUCHLA_4U
  #define DQ_OFFSET_X 22
@@ -774,9 +776,9 @@ public:
                   
                     if (!_gates) {
                       // todo
-                      //int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
-                      //_fraction = signed_saturate_rshift(_fraction, 16, 0);
-                      //pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
+                      int32_t _fraction = signed_multiply_32x16b(TICKS_TO_MS, static_cast<int32_t>(_pulsewidth)); // = * 0.6667f
+                      _fraction = signed_saturate_rshift(_fraction, 16, 0);
+                      pulse_width_in_ticks_  = (_pulsewidth << 4) + _fraction;
                     }
                     else { // put out gates/half duty cycle:
 
@@ -784,8 +786,8 @@ public:
                       
                       if (_pulsewidth != PULSEW_MAX) { // CV?
                         // todo
-                        //pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
-                        //pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
+                        pulse_width_in_ticks_ = signed_multiply_32x16b(static_cast<int32_t>(_pulsewidth) << 8, pulse_width_in_ticks_); // 
+                        pulse_width_in_ticks_ = signed_saturate_rshift(pulse_width_in_ticks_, 16, 0);
                       }
                     }
                 }

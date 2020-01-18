@@ -24,6 +24,7 @@
 #define OC_PROFILING_H_
 
 #include "util_macros.h"
+#include "../extern/dspinst.h"  
 
 namespace debug {
 
@@ -49,7 +50,10 @@ private:
 };
 
 static inline uint32_t cycles_to_us(uint32_t cycles) {
-  return cycles ; // todo ... was: multiply_u32xu32_rshift32(cycles, (1ULL << 32) / (F_CPU / 1000000));
+  //F_CPU / 1000000
+  //1250000
+  return multiply_u32xu32_rshift32(cycles, (1ULL << 32) / (120));
+  //cycles ; // todo ... was: 
 }
 
 struct AveragedCycles {
