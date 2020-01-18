@@ -34,6 +34,8 @@
   isr \
 }
 
+
+
 #ifdef BORING_APP_NAMES
 OC::App available_apps[] = {
   DECLARE_APP('A','S', "ASR", ASR, ASR_isr),
@@ -59,11 +61,11 @@ OC::App available_apps[] = {
   DECLARE_APP('D','Q', "Meta-Q", DQ, DQ_isr),
   DECLARE_APP('P','L', "Quadraturia", POLYLFO, POLYLFO_isr),
   DECLARE_APP('L','R', "Low-rents", LORENZ, LORENZ_isr),
-  //DECLARE_APP('E','G', "Piqued", ENVGEN, ENVGEN_isr),
-  //DECLARE_APP('S','Q', "Sequins", SEQ, SEQ_isr),
-  //DECLARE_APP('B','B', "Dialectic Ping Pong", BBGEN, BBGEN_isr),
-  //DECLARE_APP('B','Y', "Viznutcracker sweet", BYTEBEATGEN, BYTEBEATGEN_isr),
-  //DECLARE_APP('C','Q', "Acid Curds", CHORDS, CHORDS_isr),
+  DECLARE_APP('E','G', "Piqued", ENVGEN, ENVGEN_isr),
+  DECLARE_APP('S','Q', "Sequins", SEQ, SEQ_isr),
+  DECLARE_APP('B','B', "Dialectic Ping Pong", BBGEN, BBGEN_isr),
+  DECLARE_APP('B','Y', "Viznutcracker sweet", BYTEBEATGEN, BYTEBEATGEN_isr),
+  DECLARE_APP('C','Q', "Acid Curds", CHORDS, CHORDS_isr),
   DECLARE_APP('R','F', "References", REFS, REFS_isr)
 };
 #endif
@@ -215,6 +217,10 @@ void restore_app_data() {
 namespace apps {
 
 void set_current_app(int index) {
+  Serial.print("SET CURRENT APP ");
+  Serial.print(current_app->id);
+  Serial.println();
+
   current_app = &available_apps[index];
   global_settings.current_app_id = current_app->id;
 }
@@ -237,7 +243,7 @@ int index_of(uint16_t id) {
 }
 
 void Init(bool reset_settings) {
-
+  Serial.println("INIT APPS SETTING");
   Scales::Init();
   AUTOTUNE::Init();
   for (auto &app : available_apps)

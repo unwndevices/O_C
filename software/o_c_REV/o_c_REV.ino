@@ -68,8 +68,19 @@ void FASTRUN CORE_timer_ISR() {
   display::Flush();
   OC::DAC::Update();
   display::Update();
+  OC::ADC::Scan_DMA();  
+
+  // Pin changes are tracked in separate ISRs, so depending on prio it might  
+  // need extra precautions.  
+  OC::DigitalInputs::Scan();
+
+   ++OC::CORE::ticks;
+  if (OC::CORE::app_isr_enabled)
+    OC::apps::ISR();
 
 
+
+  
   //OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
 }
 
@@ -106,11 +117,10 @@ void setup() {
   CORE_timer.begin(CORE_timer_ISR, OC_CORE_TIMER_RATE);
   CORE_timer.priority(OC_CORE_TIMER_PRIO);
 
-#ifdef OC_UI_SEPARATE_ISR
+
   SERIAL_PRINTLN("* UI ISR @%luus", OC_UI_TIMER_RATE);
  UI_timer.begin(UI_timer_ISR, OC_UI_TIMER_RATE);
 UI_timer.priority(OC_UI_TIMER_PRIO);
-#endif
 
   // Display splash screen and optional calibration
 

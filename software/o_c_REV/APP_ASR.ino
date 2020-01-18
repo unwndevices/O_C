@@ -449,6 +449,7 @@ public:
      trigger_delay_.Update();
     
      if (update)
+
       trigger_delay_.Push(OC::trigger_delay_ticks[get_trigger_delay()]);
       
      update = trigger_delay_.triggered();
@@ -842,6 +843,7 @@ void ASR_loop() {
 }
 
 void ASR_isr() {
+  //Serial.println("ASR ISR UPDATE");
   asr.update();
 }
 
@@ -875,7 +877,6 @@ void ASR_handleButtonEvent(const UI::Event &event) {
 }
 
 void ASR_handleEncoderEvent(const UI::Event &event) {
-
   if (asr_state.scale_editor.active()) {
     asr_state.scale_editor.HandleEncoderEvent(event);
     return;
