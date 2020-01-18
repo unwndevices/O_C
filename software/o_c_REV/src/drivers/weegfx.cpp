@@ -109,6 +109,7 @@ template <weegfx::DRAW_MODE draw_mode>
 inline void draw_rect(uint8_t *buf, weegfx::coord_t y, weegfx::coord_t w, weegfx::coord_t h) __attribute__((always_inline)); 
 
 void Graphics::Init() {
+ // delay(100000000000);
   frame_ = NULL;
   setPrintPos(0, 0);
 }

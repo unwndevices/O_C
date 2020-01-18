@@ -16,9 +16,9 @@
 /* ------------ uncomment for boring app names ------------------------------------------------------  */
 //#define BORING_APP_NAMES
 /* ------------ print debug messages to USB serial --------------------------------------------------  */
-//#define PRINT_DEBUG
+#define PRINT_DEBUG
 /* ------------ flip screen / IO mapping ------------------------------------------------------------  */
-//#define FLIP_180
+#define FLIP_180_SCREEN
 /* ------------ invert screen pixels ----------------------------------------------------------------  */
 //#define INVERT_DISPLAY
 /* ------------ use DAC8564 -------------------------------------------------------------------------  */

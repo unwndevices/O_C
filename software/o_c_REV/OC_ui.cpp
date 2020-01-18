@@ -147,7 +147,25 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
 
   unsigned long start = millis();
   unsigned long now = start;
+/*SERIAL_PRINTLN("write");
+
+    GRAPHICS_BEGIN_FRAME(false);
+
+
+//driver.Flush();
+graphics.drawHLine(20,20,5);
+       // graphics.print("Ornaments & Crimes");
+      SERIAL_PRINTLN("write end");
+delay(5000);
+
+
+delay(1000000);
+
+    GRAPHICS_END_FRAME();*/
+  
+
   do {
+
 
     mode = UI_MODE_MENU;
     if (read_immediate(CONTROL_BUTTON_L))
@@ -164,14 +182,17 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
 
     now = millis();
 
-    GRAPHICS_BEGIN_FRAME(true);
+    GRAPHICS_BEGIN_FRAME(false);
 
     menu::DefaultTitleBar::Draw();
+
     #ifdef BUCHLA_cOC
       graphics.print("NLM card O_C");
     #else
       graphics.print("Ornaments & Crimes");
     #endif
+
+
     weegfx::coord_t y = menu::CalcLineY(0);
 
     graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
@@ -204,12 +225,16 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
     /* fixes spurious button presses when booting ? */
     while (event_queue_.available())
       (void)event_queue_.PullEvent();
+  SERIAL_PRINTLN("UI OC -END FRAME");
 
     GRAPHICS_END_FRAME();
 
   } while (now - start < SPLASHSCREEN_TIMEOUT_MS + SPLASHSCREEN_DELAY_MS);
+  SERIAL_PRINTLN("UI OC - SET BTN IGNORE");
 
   SetButtonIgnoreMask();
+    SERIAL_PRINTLN("UI OC - BYE BYE");
+
   return mode;
 }
 

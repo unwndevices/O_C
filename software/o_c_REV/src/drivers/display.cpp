@@ -31,8 +31,11 @@ FrameBuffer<SH1106_128x64_Driver::kFrameSize, 2> frame_buffer;
 PagedDisplayDriver<SH1106_128x64_Driver> driver;
 
 void Init() {
+	Serial.println("GRAPHIC INIT 1");
   frame_buffer.Init();
+  Serial.println("GRAPHIC INIT 2");
   driver.Init();
+  Serial.println("GRAPHIC INIT 3");
   graphics.Init();
 }
 

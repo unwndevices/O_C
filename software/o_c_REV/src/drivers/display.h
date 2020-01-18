@@ -39,8 +39,8 @@ void AdjustOffset(uint8_t offset);
 
 static inline void Flush() __attribute__((always_inline));
 static inline void Flush() {
-	if (driver.Flush())
-		frame_buffer.read();
+  if (driver.Flush())
+    frame_buffer.read();
 }
 
 static inline void Update() __attribute__((always_inline));

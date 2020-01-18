@@ -23,7 +23,7 @@
 
 // Main startup/loop for O&C firmware
 
-//#include <EEPROM.h>
+#include <EEPROM.h>
 
 #include "OC_apps.h"
 #include "OC_core.h"
@@ -51,9 +51,9 @@ const bool DUMMY = false;
 IntervalTimer UI_timer;
 
 void FASTRUN UI_timer_ISR() {
-  OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::UI_cycles);
+ // OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::UI_cycles);
   OC::ui.Poll();
-  OC_DEBUG_RESET_CYCLES(OC::ui.ticks(), 2048, OC::DEBUG::UI_cycles);
+ // OC_DEBUG_RESET_CYCLES(OC::ui.ticks(), 2048, OC::DEBUG::UI_cycles);
 }
 
 /*  ------------------------ core timer ISR ---------------------------   */
@@ -62,34 +62,15 @@ volatile bool OC::CORE::app_isr_enabled = false;
 volatile uint32_t OC::CORE::ticks = 0;
 
 void FASTRUN CORE_timer_ISR() {
-  DEBUG_PIN_SCOPE(OC_GPIO_DEBUG_PIN2);
-  OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::ISR_cycles);
+  //DEBUG_PIN_SCOPE(OC_GPIO_DEBUG_PIN2);
+  //OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::ISR_cycles);
 
-  // DAC and display share SPI. By first updating the DAC values, then starting
-  // a DMA transfer to the display things are fairly nicely interleaved. In the
-  // next ISR, the display transfer is finalized (CS update).
-
-  //display::Flush();
+  display::Flush();
   OC::DAC::Update();
-  //display::Update();
+  display::Update();
 
-  // see OC_ADC.h for details; empirically (with current parameters), Scan_DMA() picks up new samples @ 5.55kHz
-  //OC::ADC::Scan_DMA();
 
-  // Pin changes are tracked in separate ISRs, so depending on prio it might
-  // need extra precautions.
-  //OC::DigitalInputs::Scan();
-
-#ifndef OC_UI_SEPARATE_ISR
-  TODO needs a counter
-  UI_timer_ISR();
-#endif
-
-  ++OC::CORE::ticks;
-  //if (OC::CORE::app_isr_enabled)
-    //OC::apps::ISR();
-
-  OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
+  //OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
 }
 
 /*       ---------------------------------------------------------         */
@@ -103,17 +84,19 @@ void setup() {
   OC::DEBUG::Init();
   OC::DigitalInputs::Init();
   delay(400);
+      SERIAL_PRINTLN("BEGIN ADC");
+
   OC::ADC::Init(&OC::calibration_data.adc); // Yes, it's using the calibration_data before it's loaded...
   OC::ADC::Init_DMA();
   OC::DAC::Init(&OC::calibration_data.dac);
+    SERIAL_PRINTLN("BEGIN DISPLAY");
 
-  //display::Init();
+  display::Init();
 
-  //GRAPHICS_BEGIN_FRAME(true);
+ // GRAPHICS_BEGIN_FRAME(true);
   //GRAPHICS_END_FRAME();
-
-  calibration_load();
-  //display::AdjustOffset(OC::calibration_data.display_offset);
+ calibration_load();
+  display::AdjustOffset(0);
 
   OC::menu::Init();
   OC::ui.Init();
@@ -125,13 +108,15 @@ void setup() {
 
 #ifdef OC_UI_SEPARATE_ISR
   SERIAL_PRINTLN("* UI ISR @%luus", OC_UI_TIMER_RATE);
-  UI_timer.begin(UI_timer_ISR, OC_UI_TIMER_RATE);
-  UI_timer.priority(OC_UI_TIMER_PRIO);
+ UI_timer.begin(UI_timer_ISR, OC_UI_TIMER_RATE);
+UI_timer.priority(OC_UI_TIMER_PRIO);
 #endif
 
   // Display splash screen and optional calibration
+
   bool reset_settings = false;
   ui_mode = OC::ui.Splashscreen(reset_settings);
+
 
   if (ui_mode == OC::UI_MODE_CALIBRATE) {
     OC::ui.Calibrate();
@@ -146,7 +131,7 @@ void setup() {
 /*  ---------    main loop  --------  */
 
 void FASTRUN loop() {
-
+SERIAL_PRINTLN("UNWN MAIN LOOP STARTED");
   OC::CORE::app_isr_enabled = true;
   uint32_t menu_redraws = 0;
   while (true) {
@@ -159,6 +144,7 @@ void FASTRUN loop() {
     
     // Refresh display
     if (MENU_REDRAW) {
+
       GRAPHICS_BEGIN_FRAME(false); // Don't busy wait
         if (OC::UI_MODE_MENU == ui_mode) {
           OC_DEBUG_RESET_CYCLES(menu_redraws, 512, OC::DEBUG::MENU_draw_cycles);
@@ -181,14 +167,16 @@ void FASTRUN loop() {
 
     // State transition for app
     if (mode != ui_mode) {
-      if (OC::UI_MODE_SCREENSAVER == mode)
+      if (OC::UI_MODE_SCREENSAVER == mode){
         OC::apps::current_app->HandleAppEvent(OC::APP_EVENT_SCREENSAVER_ON);
-      else if (OC::UI_MODE_SCREENSAVER == ui_mode)
+      }
+      else if (OC::UI_MODE_SCREENSAVER == ui_mode){
         OC::apps::current_app->HandleAppEvent(OC::APP_EVENT_SCREENSAVER_OFF);
+      }
       ui_mode = mode;
     }
 
-    if (millis() - LAST_REDRAW_TIME > REDRAW_TIMEOUT_MS)
+    if (millis() - LAST_REDRAW_TIME > (REDRAW_TIMEOUT_MS))
       MENU_REDRAW = 1;
   }
 }

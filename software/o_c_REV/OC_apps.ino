@@ -312,7 +312,7 @@ void Init(bool reset_settings) {
 
   set_current_app(current_app_index);
   current_app->HandleAppEvent(APP_EVENT_RESUME);
-
+  SERIAL_PRINTLN("HANDLE APP EVENT CALLED");
   delay(100);
 }
 

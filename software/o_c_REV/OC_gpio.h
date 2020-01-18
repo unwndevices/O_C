@@ -31,15 +31,15 @@
   #define but_bot 4
 #endif
 
-#define OLED_DC 6
-#define OLED_RST 7
+#define OLED_DC 6 //9
+#define OLED_RST 7 //10
 #define OLED_CS 8
 
 // OLED CS is active low
 #define OLED_CS_ACTIVE LOW
 #define OLED_CS_INACTIVE HIGH
 
-#define DAC_RST 9
+#define DAC_RST 9 //7
 #define DAC_CS 10
 
 // NOTE: encoder pins R1/R2 changed for rev >= 2c

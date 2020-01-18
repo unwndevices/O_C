@@ -29,7 +29,7 @@
 #include "../../OC_gpio.h"
 #include "../../OC_options.h"
 
-#define DMA_PAGE_TRANSFER
+#define DMA_PAGE_TRANSFER_2
 #ifdef DMA_PAGE_TRANSFER
 #include <DMAChannel.h>
 static DMAChannel page_dma;
@@ -44,50 +44,47 @@ static uint8_t SH1106_data_start_seq[] = {
 };
 
 static uint8_t SH1106_init_seq[] = {
-// u8g_dev_ssd1306_128x64_adafruit3_init_seq
-  0x0ae,          /* display off, sleep mode */
-  0x0d5, 0x080,   /* clock divide ratio (0x00=1) and oscillator frequency (0x8) */
-  0x0a8, 0x03f,   /* multiplex ratio, duty = 1/32 */
-
-  0x0d3, 0x000,   /* set display offset */
-  0x040,          /* start line */
-
-  0x08d, 0x014,   /* [2] charge pump setting (p62): 0x014 enable, 0x010 disable */
-
-  0x020, 0x000,   /* 2012-05-27: page addressing mode */ // PLD: Seems to work in conjuction with lower 4 bits of column data?
-  #ifdef FLIP_180
-  0x0a0,          /* segment remap a0/a1*/
-  0x0c0,          /* c0: scan dir normal, c8: reverse */
-  #else
-  0x0a1,          /* segment remap a0/a1*/
-  0x0c8,          /* c0: scan dir normal, c8: reverse */
-  #endif
-  0x0da, 0x012,   /* com pin HW config, sequential com pin config (bit 4), disable left/right remap (bit 5) */
-  0x081, 0x0cf,   /* [2] set contrast control */
-  0x0d9, 0x0f1,   /* [2] pre-charge period 0x022/f1*/
-  0x0db, 0x040,   /* vcomh deselect level */
+U8G_ESC_CS(0),             /* disable chip */
+  U8G_ESC_ADR(0),           /* instruction mode */
+  U8G_ESC_RST(1),           /* do reset low pulse with (1*16)+2 milliseconds */
+  U8G_ESC_CS(1),             /* enable chip */
   
-  0x02e,        /* 2012-05-27: Deactivate scroll */ 
-  0x0a4,        /* output ram to display */
-#ifdef INVERT_DISPLAY
-  0x0a7,        /* inverted display mode */
-#else
-  0x0a6,        /* none inverted normal display mode */
-#endif
-  //0x0af,      /* display on */
+  0xfd,0x12,    /*Command Lock */
+  0xae,     /*Set Display Off */
+  0xd5,0xa0,    /*set Display Clock Divide Ratio/Oscillator Frequency */
+  0xa8,0x3f,    /*Set Multiplex Ratio */
+  0x3d,0x00,    /*Set Display Offset*/
+  0x40,     /*Set Display Start Line*/
+  0xa1,     /*Set Segment Re-Map*/
+  0xc8,     /*Set COM Output Scan Direction*/
+  0xda,0x12,    /*Set COM Pins Hardware Configuration*/
+  0x81,0xdf,    /*Set Current Control */
+  0xd9,0x82,    /*Set Pre-Charge Period */
+  0xdb,0x34,    /*Set VCOMH Deselect Level */
+  0xa4,     /*Set Entire Display On/Off */
+  0xa6,     /*Set Normal/Inverse Display*/
+  U8G_ESC_VCC(1), /*Power up VCC & Stabilized */
+  U8G_ESC_DLY(50),
+  0xaf,     /*Set Display On */
+  U8G_ESC_DLY(50),
+  U8G_ESC_CS(0),             /* disable chip */
+  U8G_ESC_END                /* end of sequence */
 };
 
 static uint8_t SH1106_display_on_seq[] = {
   0xaf
 };
 
+
 /*static*/
 void SH1106_128x64_Driver::Init() {
   pinMode(OLED_CS, OUTPUT);
   pinMode(OLED_RST, OUTPUT);
   pinMode(OLED_DC, OUTPUT);
-  //SPI_init(); 
 
+  SPI.begin();
+
+  delay(20);
   // u8g_teensy::U8G_COM_MSG_INIT
   digitalWriteFast(OLED_RST, HIGH);
   delay(1);
@@ -96,55 +93,19 @@ void SH1106_128x64_Driver::Init() {
   digitalWriteFast(OLED_RST, HIGH);
 
   // u8g_dev_ssd1306_128x64_adafruit3_init_seq
-  digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0),             /* disable chip */
+  digitalWriteFast(OLED_CS, HIGH); // U8G_ESC_CS(0),             /* disable chip */
   digitalWriteFast(OLED_DC, LOW); // U8G_ESC_ADR(0),           /* instruction mode */
-
   digitalWriteFast(OLED_RST, LOW); // U8G_ESC_RST(1),           /* do reset low pulse with (1*16)+2 milliseconds */
   delay(20);
   digitalWriteFast(OLED_RST, HIGH);
   delay(20);
 
-  digitalWriteFast(OLED_CS, OLED_CS_ACTIVE); // U8G_ESC_CS(1),             /* enable chip */
-
-  SPI_send(SH1106_init_seq, sizeof(SH1106_init_seq));
-
-  digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0),             /* disable chip */
-
-#ifdef DMA_PAGE_TRANSFER
-  // todo
-  // see https://github.com/manitou48/teensy4/blob/master/spidma.ino
-  LPSPI4_CR &= ~LPSPI_CR_MEN;//disable LPSPI:
-  LPSPI4_CFGR1 |= LPSPI_CFGR1_NOSTALL; //prevent stall from RX
-  LPSPI4_FCR = 0x0; // Fifo Watermark
-  LPSPI4_DER = LPSPI_DER_TDDE; //TX DMA Request Enable
-  LPSPI4_CR |= LPSPI_CR_MEN; //enable LPSPI:
-  page_dma.begin(true); // Allocate the DMA channel first 
-  //
-  page_dma.destination((volatile uint8_t&) LPSPI4_TDR);
-  page_dma.transferSize(1);
-  page_dma.transferCount(kPageSize);
-  page_dma.disableOnCompletion();
-  page_dma.triggerAtHardwareEvent(DMAMUX_SOURCE_LPSPI4_TX);
-  page_dma.disable();
-#endif
-
+  SPI_send(SH1106_init_seq,false, sizeof(SH1106_init_seq));
   Clear();
 }
 
-/*static*/
 void SH1106_128x64_Driver::Flush() {
-#ifdef DMA_PAGE_TRANSFER
-  // Assume DMA transfer has completed, else we're doomed
-  digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0)
-  page_dma.clearComplete();
-  page_dma.disable();
-  //
-  // todo: disable interupts? (was: SPI0_RSER = 0; SPI0_SR = 0xFF0F0000;
-  // ???
-  // LPSPI4_DER = 0x0 // // DMA no longer doing TX (or RX)
-  // LPSPI4_CR = LPSPI_CR_MEN | LPSPI_CR_RRF | LPSPI_CR_RTF;   // actually clear both... (maybe not, see setup, this would never recover)
-  // LPSPI4_SR = 0x3F00;  // clear out all of the other status...
-#endif
+
 }
 
 static uint8_t empty_page[SH1106_128x64_Driver::kPageSize];
@@ -155,41 +116,55 @@ void SH1106_128x64_Driver::Clear() {
   memset(empty_page, 0, sizeof(kPageSize));
 
   SH1106_data_start_seq[2] = 0xb0 | 0;
-  digitalWriteFast(OLED_DC, LOW);
-  digitalWriteFast(OLED_CS, OLED_CS_ACTIVE);
-  SPI_send(SH1106_data_start_seq, sizeof(SH1106_data_start_seq));
-  digitalWriteFast(OLED_DC, HIGH);
-  for (size_t p = 0; p < kNumPages; ++p)
-    SPI_send(empty_page, kPageSize);
-  digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0)
 
-  digitalWriteFast(OLED_DC, LOW);
-  digitalWriteFast(OLED_CS, OLED_CS_ACTIVE);
-  SPI_send(SH1106_display_on_seq, sizeof(SH1106_display_on_seq));
-  digitalWriteFast(OLED_DC, HIGH);
+  SPI_send(SH1106_data_start_seq,false, sizeof(SH1106_data_start_seq));
+  
+  for (size_t p = 0; p < kNumPages; ++p)
+    SPI_send(empty_page,true, kPageSize);
+
+  SPI_send(SH1106_display_on_seq,false, sizeof(SH1106_display_on_seq));
 }
 
 /*static*/
 void SH1106_128x64_Driver::SendPage(uint_fast8_t index, const uint8_t *data) {
   SH1106_data_start_seq[2] = 0xb0 | index;
-
-  digitalWriteFast(OLED_DC, LOW); // U8G_ESC_ADR(0),           /* instruction mode */
-  digitalWriteFast(OLED_CS, OLED_CS_ACTIVE); // U8G_ESC_CS(1),             /* enable chip */
-  SPI_send(SH1106_data_start_seq, sizeof(SH1106_data_start_seq)); // u8g_WriteEscSeqP(u8g, dev, u8g_dev_ssd1306_128x64_data_start);
-  digitalWriteFast(OLED_DC, HIGH); // /* data mode */
-
-#ifdef DMA_PAGE_TRANSFER
-  //todo
-  page_dma.sourceBuffer(data, kPageSize);
-  page_dma.enable(); // go
-#else
-  SPI_send(data, kPageSize);
-  digitalWriteFast(OLED_CS, OLED_CS_INACTIVE); // U8G_ESC_CS(0)
-#endif
+  SPI_send(SH1106_data_start_seq,false, sizeof(SH1106_data_start_seq)); 
+  SPI_send(data,true, kPageSize);
 }
 
-void SH1106_128x64_Driver::SPI_send(void *bufr, size_t n) {
-  SPI.transfer(&bufr, n); // todo
+
+
+
+void SH1106_128x64_Driver::SPI_send(void *bufr,bool DATAcmd, size_t n) {
+
+uint8_t *buf = (uint8_t *)bufr;
+
+  if(!DATAcmd) digitalWriteFast(OLED_CS, LOW);
+
+   SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE3));
+
+  if(DATAcmd){
+    // In SPI mode data is indicated by the state of the _dc line so no control bytes are needed
+    digitalWriteFast(OLED_DC, HIGH);
+    for(size_t indi = 0; indi < n; indi++){
+      digitalWriteFast(OLED_CS, LOW);
+      SPI.transfer(*(buf + indi));
+      digitalWriteFast(OLED_CS, HIGH);
+    }
+  }else{
+    // In SPI mode commands are indicated by the _dc line state, so no control bytes are needed
+    digitalWriteFast(OLED_DC, LOW);
+    for(size_t indi = 0; indi < n; indi++){
+      digitalWriteFast(OLED_CS, LOW);
+      SPI.transfer(*(buf + indi));
+      digitalWriteFast(OLED_CS, HIGH);
+    }
+  }
+  SPI.endTransaction();
+  digitalWrite(OLED_DC, HIGH);
+
+  if(!DATAcmd) digitalWrite(OLED_CS, HIGH);
+
 }
 
 /*static*/

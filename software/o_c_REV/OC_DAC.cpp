@@ -66,9 +66,9 @@ void DAC::Init(CalibrationData *calibration_data) {
   digitalWrite(DAC_CS, HIGH);
   history_tail_ = 0;
   memset(history_, 0, sizeof(uint16_t) * kHistoryDepth * DAC_CHANNEL_LAST);
-  SPI.usingInterrupt(0xFF); // ?? anyways, todo ... things have to be refactored, anyways, presumably
-  SPI.begin();
-  SPI.beginTransaction(SPISettings(SPICLOCK, MSBFIRST, SPI_MODE0));
+  SPI1.usingInterrupt(0xFF); // ?? anyways, todo ... things have to be refactored, anyways, presumably
+  SPI1.begin();
+  SPI1.beginTransaction(SPISettings(SPICLOCK, MSBFIRST, SPI_MODE0));
   
   set_all(0xffff);
   Update();
@@ -212,8 +212,8 @@ void set8565_CHA(uint32_t data) {
 
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   ASSERT_CS;
-  SPI.transfer(0x10);
-  SPI.transfer16(_data);
+  SPI1.transfer(0x10);
+  SPI1.transfer16(_data);
   DEASSERT_CS;
 }
 
@@ -221,8 +221,8 @@ void set8565_CHB(uint32_t data) {
 
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   ASSERT_CS;
-  SPI.transfer(0x12);
-  SPI.transfer16(_data);
+  SPI1.transfer(0x12);
+  SPI1.transfer16(_data);
   DEASSERT_CS;
 }
 
@@ -230,8 +230,8 @@ void set8565_CHC(uint32_t data) {
 
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   ASSERT_CS;
-  SPI.transfer(0x14);
-  SPI.transfer16(_data);
+  SPI1.transfer(0x14);
+  SPI1.transfer16(_data);
   DEASSERT_CS;
 }
 
@@ -239,8 +239,8 @@ void set8565_CHD(uint32_t data) {
 
   uint32_t _data = OC::DAC::MAX_VALUE - data;
   ASSERT_CS;
-  SPI.transfer(0x16);
-  SPI.transfer16(_data);
+  SPI1.transfer(0x16);
+  SPI1.transfer16(_data);
   DEASSERT_CS;
 }
 // OC_DAC

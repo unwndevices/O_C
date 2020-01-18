@@ -23,6 +23,17 @@
 #ifndef SH1106_128X64_DRIVER_H_
 #define SH1106_128X64_DRIVER_H_
 
+
+#define U8G_ESC_DLY(x) 255, ((x) & 0x7f)
+#define U8G_ESC_CS(x) 255, (0xd0 | ((x)&0x0f))
+#define U8G_ESC_ADR(x) 255, (0xe0 | ((x)&0x0f))
+#define U8G_ESC_RST(x) 255, (0xc0 | ((x)&0x0f))
+#define U8G_ESC_END 255, 254
+#define U8G_ESC_255 255, 255
+#define U8G_ESC_VCC(x) 255, (0xbe | ((x)&0x01))
+
+
+
 #include <stdint.h>
 #include <string.h>
 
@@ -36,7 +47,7 @@ struct SH1106_128x64_Driver {
   static void Clear();
   static void Flush();
   static void SendPage(uint_fast8_t index, const uint8_t *data);
-  static void SPI_send(void *bufr, size_t n);
+  static void SPI_send(void *bufr, bool DATAcmd,size_t n);
 
   // SH1106 ram is 132x64, so it needs an offset to center data in display.
   // However at least one display (mine) uses offset 0 so it's minimally
