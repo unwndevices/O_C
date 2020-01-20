@@ -36,6 +36,7 @@ public:
   void Init(uint8_t pin, uint8_t pin_mode) {
     pin_ = pin;
     pinMode(pin, pin_mode);
+
     state_ = 0xff;
   }
 

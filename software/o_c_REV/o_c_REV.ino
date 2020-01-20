@@ -92,9 +92,9 @@ void setup() {
   SERIAL_PRINTLN("* O&C BOOTING...");
   SERIAL_PRINTLN("* %s", OC_VERSION);
 
-  OC::DEBUG::Init();
-  OC::DigitalInputs::Init();
+  //OC::DEBUG::Init();
   delay(400);
+
       SERIAL_PRINTLN("BEGIN ADC");
 
   OC::ADC::Init(&OC::calibration_data.adc); // Yes, it's using the calibration_data before it's loaded...
@@ -102,6 +102,10 @@ void setup() {
   OC::DAC::Init(&OC::calibration_data.dac);
     SERIAL_PRINTLN("BEGIN DISPLAY");
 
+  OC::DigitalInputs::Init();
+  delay(400);
+
+  
   display::Init();
 
  // GRAPHICS_BEGIN_FRAME(true);

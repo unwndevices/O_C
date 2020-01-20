@@ -476,7 +476,6 @@ void OC::Ui::Calibrate() {
     }
 
     calibration_update(calibration_state);
-    Serial.println("DRAWING CALIBRATION");
     calibration_draw(calibration_state);
   }
 

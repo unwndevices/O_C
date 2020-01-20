@@ -495,7 +495,6 @@ void Automatonnetz_loop() {
 
 void FASTRUN Automatonnetz_isr() {
   // All user actions, etc. handled in ::Update
-  Serial.println("AUTOMATONNETZ ISR");
   automatonnetz_state.ISR();
 }
 
