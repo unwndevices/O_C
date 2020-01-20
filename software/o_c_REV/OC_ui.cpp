@@ -226,8 +226,8 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
       w = ((start + SPLASHSCREEN_DELAY_MS + SPLASHSCREEN_TIMEOUT_MS - now) << 7) / SPLASHSCREEN_TIMEOUT_MS;
       h = ((start + SPLASHSCREEN_DELAY_MS + SPLASHSCREEN_TIMEOUT_MS - now) << 6) / SPLASHSCREEN_TIMEOUT_MS;
     }
+    graphics.drawRect(126, 62, w, 2);
     graphics.drawRect(0, 62, w, 2);
-    graphics.drawRect(0, 62, 2, h);
 
 
     //graphics.drawBitmap8(40,13,48,UNWN_LOGO_BITMAP);
