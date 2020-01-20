@@ -28,10 +28,7 @@ void FASTRUN tr4_ISR() {
 
 /*static*/
 void OC::DigitalInputs::Init() {
-/*  {TR1, tr1_ISR},
-    {TR2, tr2_ISR},
-    {TR3, tr3_ISR},
-    {TR4, tr4_ISR},*/
+
   
   static const struct {
     uint8_t pin;
@@ -74,7 +71,6 @@ void OC::DigitalInputs::reInit() {
   #ifdef FLIP_180
     pinMode(TR1, OC_GPIO_TRx_PINMODE);
     attachInterrupt(TR1, tr1_ISR, FALLING);
-
   #else
     pinMode(TR4, OC_GPIO_TRx_PINMODE);
     attachInterrupt(TR4, tr4_ISR, FALLING);

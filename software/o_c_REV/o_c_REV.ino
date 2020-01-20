@@ -43,17 +43,19 @@
 
 unsigned long LAST_REDRAW_TIME = 0;
 uint_fast8_t MENU_REDRAW = true;
+uint_fast8_t UNWN_SPLASHSCREEN_LOADED = false;
 OC::UiMode ui_mode = OC::UI_MODE_MENU;
 const bool DUMMY = false;
+
 
 /*  ------------------------ UI timer ISR ---------------------------   */
 
 IntervalTimer UI_timer;
 
 void FASTRUN UI_timer_ISR() {
- // OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::UI_cycles);
+  OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::UI_cycles);
   OC::ui.Poll();
- // OC_DEBUG_RESET_CYCLES(OC::ui.ticks(), 2048, OC::DEBUG::UI_cycles);
+  OC_DEBUG_RESET_CYCLES(OC::ui.ticks(), 2048, OC::DEBUG::UI_cycles);
 }
 
 /*  ------------------------ core timer ISR ---------------------------   */
@@ -62,8 +64,8 @@ volatile bool OC::CORE::app_isr_enabled = false;
 volatile uint32_t OC::CORE::ticks = 0;
 
 void FASTRUN CORE_timer_ISR() {
-  //DEBUG_PIN_SCOPE(OC_GPIO_DEBUG_PIN2);
-  //OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::ISR_cycles);
+  DEBUG_PIN_SCOPE(OC_GPIO_DEBUG_PIN2);
+  OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::ISR_cycles);
 
   display::Flush();
   OC::DAC::Update();
@@ -78,10 +80,8 @@ void FASTRUN CORE_timer_ISR() {
   if (OC::CORE::app_isr_enabled)
     OC::apps::ISR();
 
-
-
   
-  //OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
+  OC_DEBUG_RESET_CYCLES(OC::CORE::ticks, 16384, OC::DEBUG::ISR_cycles);
 }
 
 /*       ---------------------------------------------------------         */
@@ -92,7 +92,7 @@ void setup() {
   SERIAL_PRINTLN("* O&C BOOTING...");
   SERIAL_PRINTLN("* %s", OC_VERSION);
 
-  //OC::DEBUG::Init();
+  OC::DEBUG::Init();
   delay(400);
 
       SERIAL_PRINTLN("BEGIN ADC");
@@ -105,7 +105,7 @@ void setup() {
   OC::DigitalInputs::Init();
   delay(400);
 
-  
+
   display::Init();
 
  // GRAPHICS_BEGIN_FRAME(true);
@@ -129,6 +129,8 @@ UI_timer.priority(OC_UI_TIMER_PRIO);
   // Display splash screen and optional calibration
 
   bool reset_settings = false;
+
+
   ui_mode = OC::ui.Splashscreen(reset_settings);
 
 
@@ -146,6 +148,7 @@ UI_timer.priority(OC_UI_TIMER_PRIO);
 
 void FASTRUN loop() {
 SERIAL_PRINTLN("UNWN MAIN LOOP STARTED");
+
   OC::CORE::app_isr_enabled = true;
   uint32_t menu_redraws = 0;
   while (true) {

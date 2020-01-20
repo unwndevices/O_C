@@ -307,6 +307,35 @@ void Graphics::drawBitmap8(coord_t x, coord_t y, coord_t w, const uint8_t *data)
   }
 }
 
+void Graphics::drawBitmap(coord_t x, coord_t y, coord_t w, const uint8_t *data) {
+
+  if (x + w > kWidth) w = kWidth - x;
+  if (x < 0) {
+    data += x;
+    w += x;
+  }
+  if (w <= 0)
+    return;
+
+  coord_t h = 48;
+  CLIPY(y, h);
+
+  uint8_t *buf = get_frame_ptr(x, y);
+
+  coord_t remainder = y & 0x7;
+  if (!remainder) {
+    SETPIXELS_H(buf, w, *data++);
+  } else {
+    const uint8_t *src = data;
+    SETPIXELS_H(buf, w, (*src++) << remainder);
+    if (h >= 48) {
+      buf += kWidth;
+      src = data;
+      SETPIXELS_H(buf, w, (*src++) >> (48 - remainder));
+    }
+  }
+}
+
 void Graphics::drawLine(coord_t x0, coord_t y0, coord_t x1, coord_t y1) {
   coord_t dx, dy;
   if (x0 > x1 ) dx = x0-x1; else dx = x1-x0;
