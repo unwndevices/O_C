@@ -41,11 +41,11 @@
 #include "OC_autotune.h"
 
 #define SPICLOCK 4000000
-//#define ASSERT_CS digitalWriteFast(DAC_CS, LOW);
-//#define DEASSERT_CS digitalWriteFast(DAC_CS, HIGH);
+#define ASSERT_CS digitalWriteFast(DAC_CS, LOW);
+#define DEASSERT_CS digitalWriteFast(DAC_CS, HIGH);
 
-#define ASSERT_CS do {} while(0)
-#define DEASSERT_CS do {} while(0)
+//#define ASSERT_CS do {} while(0)
+//#define DEASSERT_CS do {} while(0)
 
 namespace OC {
 
